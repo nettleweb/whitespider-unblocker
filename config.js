@@ -16,7 +16,7 @@ const config = {
 	/**
 	 * The port for http server, set to 0 or null to disable
 	 */
-	httpPort: 8080,
+	httpPort: 80,
 	/**
 	 * The port for https server, set to 0 or null to disable
 	 */
@@ -55,7 +55,6 @@ const config = {
 	 * It will return 403 error if user tried to connect from a hostname that is not listed here.
 	 */
 	allowedHosts: [
-		"giigle.cf",
 		"googlecom.gq",
 		"www.googlecom.gq",
 		"localhost"
