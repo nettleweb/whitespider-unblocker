@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"lib": [ "ES2022" ],
+		"target": "ES6",
+		"module": "Node16",
+		"rootDir": "./",
+		"outDir": "./",
+		"allowJs": false,
+		"checkJs": false,
+		"alwaysStrict": true,
+		"strict": true
+	},
+	"buildOptions": {
+		"verbose": true
+	},
+	"files": [ "./bare.ts" ]
+}
