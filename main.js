@@ -7,7 +7,7 @@ import bare from "./bare.js";
 import { default as _path } from "path";
 import config from "./config.js";
 import statusMessages from "./status.js";
-import mimeTypes from "./mimetypes.js";
+import mimeTypes from "./mime.js";
 
 Array.prototype.remove = function(element) {
 	for (let i = 0; i < this.length; i++) {
