@@ -20,7 +20,7 @@ const config = {
 	/**
 	 * The port for https server, set to 0 or null to disable
 	 */
-	httpsPort: 443,
+	httpsPort: 0,
 	/**
 	 * The http headers for non-error (status=200) responses
 	 */
