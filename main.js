@@ -40,14 +40,9 @@ function httpError(code, response) {
 }
 
 /**
- * @param {String | undefined} host 
+ * @param {string} host
  */
 function verifyHost(host) {
-	if (host == null) {
-		// always reject requests without the host header
-		return false;
-	}
-
 	const hostname = host.split(":")[0];
 	if (!config.allowedHosts.includes(hostname)) {
 		// prevent unauthorized hosts
@@ -58,20 +53,10 @@ function verifyHost(host) {
 }
 
 /**
- * @param {String | undefined} url 
- */
-function getRequestUrl(url) {
-	if (url == null)
-		return null;
-
-	return _path.normalize(decodeURIComponent(url));
-}
-
-/**
- * @param {String} url 
+ * @param {URL} url
  */
 function getRequestPath(url) {
-	const path = _path.join("./static", url);
+	const path = _path.join("./static", url.pathname);
 	if (!fs.existsSync(path))
 		return null;
 
@@ -86,7 +71,7 @@ function getRequestPath(url) {
 			"index.png",
 			"index.svg"
 		]) {
-			let p = _path.join(path, f);
+			const p = _path.join(path, f);
 			if (fs.existsSync(p))
 				return p;
 		}
@@ -100,18 +85,19 @@ function getRequestPath(url) {
 const bareServer = bare("/bare/");
 
 /**
- * @param {http.IncomingMessage} request 
+ * @param {http.IncomingMessage} request
  * @param {http.ServerResponse} response
  */
 async function requestCallback(request, response) {
-	if (!verifyHost(request.headers.host)) {
+	const host = request.headers.host;
+	if (host == null || !verifyHost(host)) {
 		httpError(403, response);
 		return;
 	}
 
-	const url = getRequestUrl(request.url);
+	const rawPath = request.url;
 	const method = request.method;
-	if (url == null || method == null) {
+	if (rawPath == null || method == null) {
 		httpError(400, response);
 		return;
 	}
@@ -122,25 +108,26 @@ async function requestCallback(request, response) {
 		return;
 	}
 
-	if (url.startsWith(bareServer.directory)) {
+	const url = new URL(`https://${host}${rawPath}`);
+
+	if (url.pathname.startsWith(bareServer.directory)) {
 		try {
-			const res = await bareServer.routeRequest(url, request);
+			const res = await bareServer.routeRequest(request);
 			if (res == null) {
 				httpError(400, response);
 				return;
 			}
 
-			const headers = {};
+			const headers = { ...config.headers };
 			for (let [k, v] of res.headers) {
 				headers[k] = v;
 			}
-			Object.assign(headers, config.headers);
 			response.writeHead(res.status, res.statusText, headers);
 
 			const body = res.body;
 			if (body instanceof stream.Stream)
 				body.pipe(response, { end: true });
-			else response.end(res.body, "utf-8");
+			else response.end(body, "utf-8");
 
 			return;
 		} catch(err) {
@@ -186,7 +173,7 @@ const bindAddr = config.address;
 const httpPort = config.httpPort;
 const httpsPort = config.httpsPort;
 
-if (httpPort != null && httpPort > 0) {
+if (httpPort != null && httpPort > 0 && httpPort < 0xffff) {
 	const httpServer = http.createServer({});
 	httpServer.on("request", requestCallback);
 	httpServer.on("upgrade", upgradeCallback);
@@ -196,7 +183,7 @@ if (httpPort != null && httpPort > 0) {
 	});
 }
 
-if (httpsPort != null && httpsPort > 0) {
+if (httpsPort != null && httpsPort > 0 && httpsPort < 0xffff) {
 	const httpsServer = https.createServer({
 		cert: fs.readFileSync(config.certPath, { encoding: "utf-8" }),
 		key: fs.readFileSync(config.privKeyPath, { encoding: "utf-8" })

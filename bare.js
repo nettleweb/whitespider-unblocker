@@ -120,23 +120,25 @@ class Server {
         this.socketRoutes = new Map();
         this.directory = directory;
     }
-    routeUpgrade(service, req, socket, head) {
+    routeUpgrade(req, socket, head) {
         return __awaiter(this, void 0, void 0, function* () {
-            service = service.slice(this.directory.length - 1);
+            const request = new Request(req);
+            const service = request.url.pathname.slice(this.directory.length - 1);
             if (this.socketRoutes.has(service)) {
                 const call = this.socketRoutes.get(service);
-                yield call(new Request(req), socket, head);
+                yield call(request, socket, head);
                 return true;
             }
             return false;
         });
     }
-    routeRequest(service, req) {
+    routeRequest(req) {
         return __awaiter(this, void 0, void 0, function* () {
-            service = service.slice(this.directory.length - 1);
+            const request = new Request(req);
+            const service = request.url.pathname.slice(this.directory.length - 1);
             if (this.routes.has(service)) {
                 const call = this.routes.get(service);
-                return yield call(new Request(req));
+                return yield call(request);
             }
             return null;
         });

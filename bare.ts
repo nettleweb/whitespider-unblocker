@@ -155,24 +155,26 @@ class Server {
 		this.directory = directory;
 	}
 
-	async routeUpgrade(service: string, req: IncomingMessage, socket: Duplex, head: Buffer) {
-		service = service.slice(this.directory.length - 1);
+	async routeUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer) {
+		const request = new Request(req);
+		const service = request.url.pathname.slice(this.directory.length - 1);
 
 		if (this.socketRoutes.has(service)) {
 			const call = this.socketRoutes.get(service)!;
-			await call(new Request(req), socket, head);
+			await call(request, socket, head);
 			return true;
 		}
 
 		return false;
 	}
 
-	async routeRequest(service: string, req: IncomingMessage): Promise<Response | null> {
-		service = service.slice(this.directory.length - 1);
+	async routeRequest(req: IncomingMessage): Promise<Response | null> {
+		const request = new Request(req);
+		const service = request.url.pathname.slice(this.directory.length - 1);
 
 		if (this.routes.has(service)) {
 			const call = this.routes.get(service)!;
-			return await call(new Request(req));
+			return await call(request);
 		}
 
 		return null;

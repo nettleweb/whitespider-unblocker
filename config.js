@@ -25,17 +25,17 @@ const config = {
 	 * The http headers for non-error (status=200) responses
 	 */
 	headers: {
-		"Access-Control-Allow-Origin": "*",
-		"Access-Control-Allow-Methods": "*",
-		"Access-Control-Allow-Headers": "*",
-		"Access-Control-Allow-Credentials": "true",
-		"Access-Control-Expose-Headers": "*",
-		"Access-Control-Max-Age": "14400",
+		// "Access-Control-Allow-Origin": "*",
+		// "Access-Control-Allow-Methods": "*",
+		// "Access-Control-Allow-Headers": "*",
+		// "Access-Control-Allow-Credentials": "true",
+		// "Access-Control-Expose-Headers": "*",
+		// "Access-Control-Max-Age": "14400",
 		"Cross-Origin-Embedder-Policy": "require-corp",
 		"Cross-Origin-Opener-Policy": "same-origin",
 		"Referrer-Policy": "no-referrer",
 		"X-Content-Type-Options": "nosniff",
-		"X-Frame-Options": "SAMEORIGIN",
+		// "X-Frame-Options": "SAMEORIGIN",
 		"X-Robots-Tag": "noindex,nofollow"
 	},
 	/**
