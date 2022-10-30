@@ -20,7 +20,7 @@ const config = {
 	/**
 	 * The port for https server, set to 0 or null to disable
 	 */
-	httpsPort: 0,
+	httpsPort: 443,
 	/**
 	 * The http headers for non-error (status=200) responses
 	 */
@@ -62,11 +62,11 @@ const config = {
 	/**
 	 * A path where SSL certificate is located, only useful when https is enabled
 	 */
-	certPath: "./cert/cert1.pem",
+	certPath: "../cert/cert1.pem",
 	/**
 	 * A path where SSL private key is located, only useful when https is enabled
 	 */
-	privKeyPath: "./cert/privkey1.pem"
+	privKeyPath: "../cert/privkey1.pem"
 };
 
 // binding provided port in env is required by some hosting providers
