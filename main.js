@@ -160,7 +160,7 @@ async function requestCallback(request, response) {
  */
 async function upgradeCallback(request, socket, head) {
 	try {
-		const result = await bareServer.routeUpgrade(request.url, request, socket, head);
+		const result = await bareServer.routeUpgrade(request, socket, head);
 		if (!result)
 			socket.end();
 	} catch(err) {
