@@ -20,7 +20,7 @@ const config = {
 	/**
 	 * The port for https server, set to 0 or null to disable
 	 */
-	httpsPort: 0,
+	httpsPort: 443,
 	/**
 	 * The http headers for non-error (status=200) responses
 	 */
@@ -55,7 +55,13 @@ const config = {
 	 * It will return 403 error if user tried to connect from a hostname that is not listed here.
 	 */
 	allowedHosts: [
-		"mmcn.herokuapp.com",
+		"googlecom.gq",
+		"www.googlecom.gq",
+		"unblocker.whitespider.cf",
+		"unblocker.whitespider.ga",
+		"unblocker.whitespider.gq",
+		"unblocker.whitespider.ml",
+		"unblocker.whitespider.tk",
 		"localhost"
 	],
 	/**
