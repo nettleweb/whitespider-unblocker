@@ -55,8 +55,7 @@ const config = {
 	 * It will return 403 error if user tried to connect from a hostname that is not listed here.
 	 */
 	allowedHosts: [
-		"googlecom.gq",
-		"www.googlecom.gq",
+		"mmcn.herokuapp.com",
 		"localhost"
 	],
 	/**
