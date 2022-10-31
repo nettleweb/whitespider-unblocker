@@ -102,15 +102,15 @@ async function requestCallback(request, response) {
 		return;
 	}
 
-	if (method == "OPTIONS") {
-		response.writeHead(200, "", config.headers);
-		response.end();
-		return;
-	}
-
 	const url = new URL(`https://${host}${rawPath}`);
 
 	if (url.pathname.startsWith(bareServer.directory)) {
+		if (method == "OPTIONS") {
+			response.writeHead(200, "", config.bareHeaders);
+			response.end();
+			return;
+		}
+
 		try {
 			const res = await bareServer.routeRequest(request);
 			if (res == null) {
@@ -118,7 +118,7 @@ async function requestCallback(request, response) {
 				return;
 			}
 
-			const headers = { ...config.headers };
+			const headers = { ...config.bareHeaders };
 			for (let [k, v] of res.headers) {
 				headers[k] = v;
 			}
@@ -128,15 +128,12 @@ async function requestCallback(request, response) {
 			if (body instanceof stream.Stream)
 				body.pipe(response, { end: true });
 			else response.end(body, "utf-8");
-
-			return;
 		} catch(err) {
-			console.log(err);
+			console.warn(err);
 			httpError(500, response);
-			return;
 		}
+		return;
 	}
-
 
 	const path = getRequestPath(url);
 	if (path == null) {
@@ -164,7 +161,7 @@ async function upgradeCallback(request, socket, head) {
 		if (!result)
 			socket.end();
 	} catch(err) {
-		console.error(err);
+		console.warn(err);
 		socket.end();
 	}
 }
