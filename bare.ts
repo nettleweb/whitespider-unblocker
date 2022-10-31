@@ -4,6 +4,7 @@ import { Stream, Duplex } from "stream";
 import { Headers } from "headers-polyfill";
 import { randomBytes } from "crypto";
 import { promisify } from "util";
+import { default as _dns, promises as dns } from "dns";
 
 type ResponseBody = Buffer | Stream | undefined;
 type BareHeaders = Record<string, string | string[]>;
@@ -48,8 +49,27 @@ class Response {
 	}
 }
 
-const httpAgent = new HttpAgent({ hints: 0 });
-const httpsAgent = new HttpsAgent({});
+dns.setServers([
+	"1.1.1.1",
+	"1.0.0.1",
+	"[2606:4700:4700::1111]",
+	"[2606:4700:4700::1001]"
+]);
+
+const agentOp = {
+	lookup: async (hostname: string, options: _dns.LookupOneOptions, callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void) => {
+		const addr = await dns.resolve4(hostname);
+
+		if (addr.length == 0) {
+			callback(new Error("DNS resolution failure"), "", 0);
+		}
+	
+		callback(null, addr[0], 4);
+	}
+};
+
+const httpAgent = new HttpAgent(agentOp);
+const httpsAgent = new HttpsAgent(agentOp);
 
 function decodeProtocol(protocol: string) {
 	let result = "";
@@ -120,12 +140,12 @@ function fetch(request: Request, requestHeaders: BareHeaders, url: BareRemote): 
 }
 
 function upgradeFetch(request: Request, requestHeaders: BareHeaders, url: BareRemote): Promise<[IncomingMessage, Duplex, Buffer]> {
-	const options = {
+	const options : RequestOptions = {
 		host: url.host,
 		port: url.port,
 		path: url.path,
-		headers: requestHeaders,
 		method: request.method,
+		headers: requestHeaders,
 		setHost: false
 	};
 

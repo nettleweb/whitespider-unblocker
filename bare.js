@@ -12,6 +12,7 @@ import { Agent as HttpsAgent, request as httpsRequest } from "https";
 import { Headers } from "headers-polyfill";
 import { randomBytes } from "crypto";
 import { promisify } from "util";
+import { promises as dns } from "dns";
 class Request {
     constructor(base) {
         this.body = base;
@@ -36,8 +37,23 @@ class Response {
         }
     }
 }
-const httpAgent = new HttpAgent({ hints: 0 });
-const httpsAgent = new HttpsAgent({});
+dns.setServers([
+    "1.1.1.1",
+    "1.0.0.1",
+    "[2606:4700:4700::1111]",
+    "[2606:4700:4700::1001]"
+]);
+const agentOp = {
+    lookup: (hostname, options, callback) => __awaiter(void 0, void 0, void 0, function* () {
+        const addr = yield dns.resolve4(hostname);
+        if (addr.length == 0) {
+            callback(new Error("DNS resolution failure"), "", 0);
+        }
+        callback(null, addr[0], 4);
+    })
+};
+const httpAgent = new HttpAgent(agentOp);
+const httpsAgent = new HttpsAgent(agentOp);
 function decodeProtocol(protocol) {
     let result = "";
     for (let i = 0; i < protocol.length; i++) {
@@ -98,8 +114,8 @@ function upgradeFetch(request, requestHeaders, url) {
         host: url.host,
         port: url.port,
         path: url.path,
-        headers: requestHeaders,
         method: request.method,
+        headers: requestHeaders,
         setHost: false
     };
     const outgoing = url.protocol == "wss:" ? httpsRequest(Object.assign(Object.assign({}, options), { agent: httpsAgent })) : httpRequest(Object.assign(Object.assign({}, options), { agent: httpAgent }));
