@@ -73,13 +73,7 @@ const config = {
 	 * @type {string[]}
 	 */
 	allowedHosts: [
-		"googlecom.gq",
-		"www.googlecom.gq",
-		"unblocker.whitespider.cf",
-		"unblocker.whitespider.ga",
-		"unblocker.whitespider.gq",
-		"unblocker.whitespider.ml",
-		"unblocker.whitespider.tk",
+		"mmcn.herokuapp.com",
 		"localhost"
 	],
 	/**
