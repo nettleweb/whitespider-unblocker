@@ -4,7 +4,7 @@ import { Stream, Duplex } from "stream";
 import { Headers } from "headers-polyfill";
 import { randomBytes } from "crypto";
 import { promisify } from "util";
-import { default as _dns, promises as dns } from "dns";
+import { default as dns } from "dns";
 
 type ResponseBody = Buffer | Stream | undefined;
 type BareHeaders = Record<string, string | string[]>;
@@ -49,22 +49,26 @@ class Response {
 	}
 }
 
-dns.setServers([
+const dnsServers = [
 	"1.1.1.1",
 	"1.0.0.1",
 	"[2606:4700:4700::1111]",
 	"[2606:4700:4700::1001]"
-]);
+];
+
+dns.setServers(dnsServers);
+dns.promises.setServers(dnsServers);
 
 const agentOp = {
-	lookup: async (hostname: string, options: _dns.LookupOneOptions, callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void) => {
-		const addr = await dns.resolve4(hostname);
+	lookup: async (hostname: string, options: dns.LookupOneOptions, callback: (err: any, address: string, family: number) => void) => {
+		dns.resolve4(hostname, (err, addr) => {
+			if (err != null) {
+				callback(err, "", 0);
+				return;
+			}
 
-		if (addr.length == 0) {
-			callback(new Error("DNS resolution failure"), "", 0);
-		}
-	
-		callback(null, addr[0], 4);
+			callback(void 0, addr[0], 4);
+		});
 	}
 };
 
