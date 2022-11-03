@@ -30,23 +30,23 @@ const config = {
 	 * @type {object}
 	 */
 	headers: {
+		"Content-Security-Policy": "default-src 'self'; connect-src 'self'; font-src 'self'; img-src 'self'; media-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; worker-src 'self';",
 		"Cross-Origin-Embedder-Policy": "require-corp",
 		"Cross-Origin-Opener-Policy": "same-origin",
 		"Referrer-Policy": "no-referrer",
-		"X-Content-Type-Options": "nosniff",
-		// "X-Frame-Options": "SAMEORIGIN",
-		// "X-Robots-Tag": "noindex,nofollow"
+		"X-Content-Type-Options": "nosniff"
 	},
 	/**
 	 * @type {object}
 	 */
 	bareHeaders: {
-		"Access-Control-Allow-Origin": "*",
+		"Access-Control-Allow-Origin": "https://unblocker.ruochenjia.repl.co https://whitespider.cf https://whitespider.ga https://whitespider.gq https://whitespider.ml https://whitespider.tk https://whitespider.pages.dev https://whitespider-sw.html6.workers.dev https://whitespidergq.github.io",
 		"Access-Control-Allow-Methods": "*",
 		"Access-Control-Allow-Headers": "*",
 		"Access-Control-Allow-Credentials": "true",
 		"Access-Control-Expose-Headers": "*",
 		"Access-Control-Max-Age": "14400",
+		"Content-Security-Policy": "default-src 'self'; connect-src 'self'; font-src 'self'; img-src 'self'; media-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; worker-src 'self'; frame-ancestors 'none';",
 		"Cross-Origin-Embedder-Policy": "require-corp",
 		"Cross-Origin-Opener-Policy": "same-origin",
 		"Referrer-Policy": "no-referrer",
@@ -59,6 +59,7 @@ const config = {
 	 * @type {object}
 	 */
 	errorHeaders: {
+		"Content-Security-Policy": "default-src 'self'; connect-src 'self'; font-src 'self'; img-src 'self'; media-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; worker-src 'self'; frame-ancestors 'none';",
 		"Cross-Origin-Embedder-Policy": "require-corp",
 		"Cross-Origin-Opener-Policy": "same-origin",
 		"Referrer-Policy": "no-referrer",
