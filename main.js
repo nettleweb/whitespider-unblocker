@@ -106,7 +106,7 @@ async function requestCallback(request, response) {
 
 	if (url.pathname.startsWith(bareServer.directory)) {
 		const origin = request.headers.origin;
-		if (origin == null || !config.bareAllowedOrigins.includes(origin)) {
+		if (origin != null && origin != url.origin && !config.bareAllowedOrigins.includes(origin)) {
 			// reject requests from unauthorized origins
 			httpError(403, response);
 			return;
