@@ -66,7 +66,8 @@ const config = {
 		"https://whitespider.tk",
 		"https://whitespider.pages.dev",
 		"https://whitespider-sw.html6.workers.dev",
-		"https://whitespidergq.github.io"
+		"https://whitespidergq.github.io",
+		"http://localhost"
 	],
 	/**
 	 * The http headers for error responses (status != 200)
