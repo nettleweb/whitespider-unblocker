@@ -40,7 +40,7 @@ const config = {
 	 * @type {object}
 	 */
 	bareHeaders: {
-		"Access-Control-Allow-Origin": "https://unblocker.ruochenjia.repl.co https://whitespider.cf https://whitespider.ga https://whitespider.gq https://whitespider.ml https://whitespider.tk https://whitespider.pages.dev https://whitespider-sw.html6.workers.dev https://whitespidergq.github.io",
+		"Access-Control-Allow-Origin": "*",
 		"Access-Control-Allow-Methods": "*",
 		"Access-Control-Allow-Headers": "*",
 		"Access-Control-Allow-Credentials": "true",
@@ -54,6 +54,20 @@ const config = {
 		"X-Frame-Options": "SAMEORIGIN",
 		"X-Robots-Tag": "noindex,nofollow"
 	},
+	/**
+	 * @type {string[]}
+	 */
+	bareAllowedOrigins: [
+		"https://unblocker.ruochenjia.repl.co",
+		"https://whitespider.cf",
+		"https://whitespider.ga",
+		"https://whitespider.gq",
+		"https://whitespider.ml",
+		"https://whitespider.tk",
+		"https://whitespider.pages.dev",
+		"https://whitespider-sw.html6.workers.dev",
+		"https://whitespidergq.github.io"
+	],
 	/**
 	 * The http headers for error responses (status != 200)
 	 * @type {object}
