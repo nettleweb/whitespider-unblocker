@@ -53,6 +53,19 @@ function verifyHost(host) {
 }
 
 /**
+ * @param {string | undefined} origin 
+ * @param {string} base 
+ */
+function verifyOrigin(origin, base) {
+	if (origin == null || origin == base) {
+		// same origin
+		return true;
+	}
+
+	return config.bareAllowedHosts.includes(new URL(origin).hostname);
+}
+
+/**
  * @param {URL} url
  */
 function getRequestPath(url) {
@@ -105,8 +118,7 @@ async function requestCallback(request, response) {
 	const url = new URL(`https://${host}${rawPath}`);
 
 	if (url.pathname.startsWith(bareServer.directory)) {
-		const origin = request.headers.origin;
-		if (origin != null && origin != url.origin && !config.bareAllowedOrigins.includes(origin)) {
+		if (!verifyOrigin(request.headers.origin, url.origin)) {
 			// reject requests from unauthorized origins
 			httpError(403, response);
 			return;
@@ -152,6 +164,11 @@ async function requestCallback(request, response) {
 	const head = { ...config.headers };
 	const extName = _path.extname(path);
 	head["Content-Type"] =  extName in mimeTypes ? mimeTypes[extName] : "application/unknown";
+
+	if (url.pathname.startsWith("/lfs/")) {
+		// special usage paths
+		head["Access-Control-Allow-Origin"] = "*";
+	}
 
 	response.writeHead(200, "", head);
 	response.end(file, "utf-8");

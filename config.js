@@ -57,17 +57,17 @@ const config = {
 	/**
 	 * @type {string[]}
 	 */
-	bareAllowedOrigins: [
-		"https://unblocker.ruochenjia.repl.co",
-		"https://whitespider.cf",
-		"https://whitespider.ga",
-		"https://whitespider.gq",
-		"https://whitespider.ml",
-		"https://whitespider.tk",
-		"https://whitespider.pages.dev",
-		"https://whitespider-sw.html6.workers.dev",
-		"https://whitespidergq.github.io",
-		"http://localhost"
+	bareAllowedHosts: [
+		"unblocker.ruochenjia.repl.co",
+		"whitespider.cf",
+		"whitespider.ga",
+		"whitespider.gq",
+		"whitespider.ml",
+		"whitespider.tk",
+		"whitespider.pages.dev",
+		"whitespider-sw.html6.workers.dev",
+		"whitespidergq.github.io",
+		"localhost"
 	],
 	/**
 	 * The http headers for error responses (status != 200)
