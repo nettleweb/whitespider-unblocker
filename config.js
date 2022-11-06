@@ -30,7 +30,6 @@ const config = {
 	 * @type {object}
 	 */
 	headers: {
-		"Content-Security-Policy": "default-src 'self'; connect-src 'self'; font-src 'self'; img-src 'self'; media-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; worker-src 'self';",
 		"Cross-Origin-Embedder-Policy": "require-corp",
 		"Cross-Origin-Opener-Policy": "same-origin",
 		"Referrer-Policy": "no-referrer",
