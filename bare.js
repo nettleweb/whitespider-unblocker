@@ -46,15 +46,15 @@ const dnsServers = [
 dns.setServers(dnsServers);
 dns.promises.setServers(dnsServers);
 const agentOp = {
-    lookup: (hostname, options, callback) => __awaiter(void 0, void 0, void 0, function* () {
-        dns.resolve4(hostname, (err, addr) => {
-            if (err != null) {
-                callback(err, "", 0);
-                return;
-            }
-            callback(void 0, addr[0], 4);
-        });
-    })
+// lookup: async (hostname: string, options: dns.LookupOneOptions, callback: (err: any, address: string, family: number) => void) => {
+// 	dns.resolve4(hostname, (err, addr) => {
+// 		if (err != null) {
+// 			callback(err, "", 0);
+// 			return;
+// 		}
+// 		callback(void 0, addr[0], 4);
+// 	});
+// }
 };
 const httpAgent = new HttpAgent(agentOp);
 const httpsAgent = new HttpsAgent(agentOp);
