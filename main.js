@@ -21,9 +21,9 @@ Array.prototype.remove = function(element) {
  * @param {http.ServerResponse} response 
  */
 function httpError(code, response) {
-	const codeStr = code.toString();
-	const errorDoc = `./static/${codeStr}.html`;
-	const msg = statusMessages[codeStr];
+	const errorDoc = `./static/${code}.html`;
+	const errorDoc2 = `./static/${code}.xht`;
+	const msg = statusMessages[code];
 	const head = { ...config.errorHeaders };
 
 	if (fs.existsSync(errorDoc)) {
@@ -31,10 +31,15 @@ function httpError(code, response) {
 		head["Content-Type"] = "text/html";
 		response.writeHead(code, msg, head);
 		response.end(file, "utf-8");
+	} else if (fs.existsSync(errorDoc2)) {
+		const file = fs.readFileSync(errorDoc2, { encoding: "utf-8" });
+		head["Content-Type"] = "application/xhtml+xml";
+		response.writeHead(code, msg, head);
+		response.end(file, "utf-8");
 	} else {
 		head["Content-Type"] = "text/plain";
 		response.writeHead(code, msg, head);
-		response.write(codeStr + " " + msg, "utf-8");
+		response.write(msg, "utf-8");
 		response.end();
 	}
 }
@@ -77,12 +82,9 @@ function getRequestPath(url) {
 		for (let f of [
 			"index.html",
 			"index.htm",
-			"index.xml",
 			"index.xhtml",
 			"index.xht",
-			"index.txt",
-			"index.png",
-			"index.svg"
+			"index.xml"
 		]) {
 			const p = _path.join(path, f);
 			if (fs.existsSync(p))
