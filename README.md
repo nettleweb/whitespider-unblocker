@@ -1,4 +1,5 @@
 # WhiteSpider Unblocker
+![GitHub package.json version](https://img.shields.io/github/package-json/v/ruochenjia/whitespider-unblocker) <br />
 Unblock websites through a proxy server, bypass the restrictions of local network and browser extensions. <br />
 Link to website: https://unblocker.whitespider.gq <br />
 Alternative link: https://unblocker.ruochenjia.repl.co
