@@ -32,7 +32,6 @@ const config = {
 	headers: {
 		"Cross-Origin-Embedder-Policy": "require-corp",
 		"Cross-Origin-Opener-Policy": "same-origin",
-		"Referrer-Policy": "no-referrer",
 		"X-Content-Type-Options": "nosniff"
 	},
 	/**
