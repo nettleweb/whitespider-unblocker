@@ -75,7 +75,10 @@ async function sync(id) {
 			type: "jpeg",
 			fullPage: false
 		});
-		return buf instanceof Buffer ? buf : null;
+		return {
+			buf: buf instanceof Buffer ? buf.buffer : null,
+			url: page.url()
+		};
 	} catch(err) {
 		return null;
 	}
@@ -320,9 +323,9 @@ function bind(httpServer) {
 			socket.emit("session_id", id);
 
 			socket.on("sync", async () => {
-				const buf = await tomcat.sync(id);
-				if (buf != null) {
-					socket.emit("buffer", buf.buffer);
+				const data = await tomcat.sync(id);
+				if (data != null) {
+					socket.emit("data", data);
 				}
 			});
 
