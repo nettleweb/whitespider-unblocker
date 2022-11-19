@@ -300,8 +300,8 @@ const tomcat = {
 function bind(httpServer) {
 	const io = new Server(httpServer, {
 		cors: {
-			methods: "*",
-			origin: "*",
+			methods: "none",
+			origin: "none",
 			credentials: true
 		},
 		connectTimeout: 30000,
