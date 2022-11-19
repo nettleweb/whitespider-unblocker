@@ -1,9 +1,8 @@
 import http from "http";
 import https from "https";
-import stream from "stream";
 import fs from "fs";
 import {} from "./log.js";
-import bare from "./bare.js";
+import { bind } from "./tomcat.js";
 import { default as _path } from "path";
 import config from "./config.js";
 import statusMessages from "./status.js";
@@ -58,19 +57,6 @@ function verifyHost(host) {
 }
 
 /**
- * @param {string | undefined} origin 
- * @param {string} base 
- */
-function verifyOrigin(origin, base) {
-	if (origin == null || origin == base) {
-		// same origin
-		return true;
-	}
-
-	return config.bareAllowedHosts.includes(new URL(origin).hostname);
-}
-
-/**
  * @param {URL} url
  */
 function getRequestPath(url) {
@@ -97,8 +83,6 @@ function getRequestPath(url) {
 	return path;
 }
 
-const bareServer = bare("/bare/");
-
 /**
  * @param {http.IncomingMessage} request
  * @param {http.ServerResponse} response
@@ -118,44 +102,6 @@ async function requestCallback(request, response) {
 	}
 
 	const url = new URL(`https://${host}${rawPath}`);
-
-	if (url.pathname.startsWith(bareServer.directory)) {
-		if (!verifyOrigin(request.headers.origin, url.origin)) {
-			// reject requests from unauthorized origins
-			httpError(403, response);
-			return;
-		}
-
-		if (method == "OPTIONS") {
-			response.writeHead(200, "", config.bareHeaders);
-			response.end();
-			return;
-		}
-
-		try {
-			const res = await bareServer.routeRequest(request);
-			if (res == null) {
-				httpError(400, response);
-				return;
-			}
-
-			const headers = { ...config.bareHeaders };
-			for (let [k, v] of res.headers) {
-				headers[k] = v;
-			}
-			response.writeHead(res.status, res.statusText, headers);
-
-			const body = res.body;
-			if (body instanceof stream.Stream)
-				body.pipe(response, { end: true });
-			else response.end(body, "utf-8");
-		} catch(err) {
-			console.warn(err);
-			httpError(500, response);
-		}
-		return;
-	}
-
 	const path = getRequestPath(url);
 	if (path == null) {
 		httpError(404, response);
@@ -176,20 +122,8 @@ async function requestCallback(request, response) {
 	response.end(file, "utf-8");
 }
 
-/**
- * @param {http.IncomingMessage} request
- * @param {stream.Duplex} socket
- * @param {Buffer} head
- */
 async function upgradeCallback(request, socket, head) {
-	try {
-		const result = await bareServer.routeUpgrade(request, socket, head);
-		if (!result)
-			socket.end();
-	} catch(err) {
-		console.warn(err);
-		socket.end();
-	}
+	socket.end("Forbidden", "utf-8");
 }
 
 const bindAddr = config.address;
@@ -204,6 +138,7 @@ if (httpPort != null && httpPort > 0 && httpPort < 0xffff) {
 		const addr = httpServer.address();
 		console.log(`HTTP server started on ${addr.address}:${addr.port}`);
 	});
+	bind(httpServer);
 }
 
 if (httpsPort != null && httpsPort > 0 && httpsPort < 0xffff) {
@@ -217,4 +152,5 @@ if (httpsPort != null && httpsPort > 0 && httpsPort < 0xffff) {
 		const addr = httpsServer.address();
 		console.log(`HTTPS server started on ${addr.address}:${addr.port}`);
 	});
+	bind(httpsServer);
 }

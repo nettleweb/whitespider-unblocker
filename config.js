@@ -36,39 +36,6 @@ const config = {
 		"X-Content-Type-Options": "nosniff"
 	},
 	/**
-	 * @type {object}
-	 */
-	bareHeaders: {
-		"Access-Control-Allow-Origin": "*",
-		"Access-Control-Allow-Methods": "*",
-		"Access-Control-Allow-Headers": "*",
-		"Access-Control-Allow-Credentials": "true",
-		"Access-Control-Expose-Headers": "*",
-		"Access-Control-Max-Age": "14400",
-		"Content-Security-Policy": "default-src 'self'; connect-src 'self'; font-src 'self'; img-src 'self'; media-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; worker-src 'self'; frame-ancestors 'none';",
-		"Cross-Origin-Embedder-Policy": "require-corp",
-		"Cross-Origin-Opener-Policy": "same-origin",
-		"Referrer-Policy": "no-referrer",
-		"X-Content-Type-Options": "nosniff",
-		"X-Frame-Options": "SAMEORIGIN",
-		"X-Robots-Tag": "noindex,nofollow"
-	},
-	/**
-	 * @type {string[]}
-	 */
-	bareAllowedHosts: [
-		"unblocker.ruochenjia.repl.co",
-		"whitespider.cf",
-		"whitespider.ga",
-		"whitespider.gq",
-		"whitespider.ml",
-		"whitespider.tk",
-		"whitespider.pages.dev",
-		"whitespider-sw.html6.workers.dev",
-		"whitespidergq.github.io",
-		"localhost"
-	],
-	/**
 	 * The http headers for error responses (status != 200)
 	 * @type {object}
 	 */
