@@ -17,7 +17,7 @@ Alternative link: https://unblocker.ruochenjia.repl.co
 ## Quick Start
 1. Clone this repository to your server.
 ```sh
-$ git clone https://github.com/ruochenjia/whitespider-unblocker.git
+$ git clone --recurse-submodules https://github.com/ruochenjia/whitespider-unblocker.git
 ```
 2. Install dependencies.
 ```sh
