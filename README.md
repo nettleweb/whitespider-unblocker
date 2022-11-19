@@ -32,3 +32,6 @@ $ npm run start
 ## Mirror Links
 If the links provided here have been restricted, you can visit https://sites.google.com/view/wsug-mirrors to get a list of mirror links. <br />
 Mirrors can be slower than the main link, only use them when you really need.
+
+## License
+This repository (include all sub-repositories) is licensed under GPL-3.0 license, see `LICENSE.md` for more details.
