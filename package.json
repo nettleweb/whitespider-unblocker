@@ -15,5 +15,18 @@
 	"dependencies": {
 		"puppeteer": "^19.2.2",
 		"socket.io": "^4.5.3"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ruochenjia/whitespider-unblocker.git"
+	},
+	"keywords": [
+		"unblocker",
+		"proxy",
+		"whitespider"
+	],
+	"bugs": {
+		"url": "https://github.com/ruochenjia/whitespider-unblocker/issues"
+	},
+	"homepage": "https://github.com/ruochenjia/whitespider-unblocker#readme"
 }
