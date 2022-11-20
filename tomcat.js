@@ -24,7 +24,8 @@ const browser = await puppeteer.launch({
 const clients = [];
 
 async function newSession() {
-	const page = await browser.newPage();
+	const context = await browser.createIncognitoBrowserContext();
+	const page = await context.newPage();
 	await page.setCacheEnabled(true);
 	await page.setJavaScriptEnabled(true);
 	await page.setGeolocation({ 
@@ -55,6 +56,7 @@ async function navigate(id, url) {
 		});
 		return true;
 	} catch(err) {
+		console.log(err);
 		return false;
 	}
 }
@@ -80,6 +82,7 @@ async function sync(id) {
 			url: page.url()
 		};
 	} catch(err) {
+		console.log(err);
 		return null;
 	}
 }
@@ -221,6 +224,7 @@ async function goBack(id) {
 			timeout: 15000
 		}) != null;
 	} catch(err) {
+		console.log(err);
 		return false;
 	}
 }
@@ -239,6 +243,7 @@ async function goForward(id) {
 			timeout: 15000
 		}) != null;
 	} catch(err) {
+		console.log(err);
 		return false;
 	}
 }
@@ -257,6 +262,7 @@ async function refresh(id) {
 			timeout: 15000
 		}) != null;
 	} catch(err) {
+		console.log(err);
 		return false;
 	}
 }
@@ -271,9 +277,11 @@ async function endSession(id) {
 
 	try {
 		await page.close({ runBeforeUnload: false });
+		await page.browserContext().close();
 		delete clients[id];
 		return true;
 	} catch(err) {
+		console.log(err);
 		return false;
 	}
 }
