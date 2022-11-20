@@ -105,7 +105,8 @@ async function dispatchMouseEvent(id, event) {
 		switch (type) {
 			case "contextmenu":
 			case "click":
-				await page.mouse.click(x, y, { button, clickCount: 1, delay: 1 });
+				// deprecated
+				await page.mouse.click(x, y, { button });
 				return true;
 			case "mousedown":
 				await page.mouse.down({ button, clickCount: 1 });
@@ -142,6 +143,33 @@ async function dispatchWheelEvent(id, event) {
 		switch (type) {
 			case "wheel":
 				await page.mouse.wheel({ deltaX, deltaY });
+				return true;
+			default:
+				throw new Error("Invalid event type: " + type);
+		}
+	} catch(err) {
+		console.log(err);
+		return false;
+	}
+}
+
+/**
+ * @param {number} id 
+ * @param {{ readonly type: string; readonly x: number; readonly y: number; }} event 
+ */
+async function dispatchTouchEvent(id, event) {
+	const page = clients[id];
+	if (page == null)
+		return false;
+
+	try {
+		const type = event.type;
+		const x = event.x;
+		const y = event.y;
+
+		switch (type) {
+			case "touchend":
+				await page.touchscreen.tap(x, y);
 				return true;
 			default:
 				throw new Error("Invalid event type: " + type);
@@ -199,6 +227,7 @@ async function dispatchInputEvent(id, event) {
 
 		switch (type) {
 			case "input":
+				// deprecated
 				await page.keyboard.sendCharacter(data);
 				return true;
 			default:
@@ -292,6 +321,7 @@ const tomcat = {
 	sync,
 	dispatchMouseEvent,
 	dispatchWheelEvent,
+	dispatchTouchEvent,
 	dispatchKeyboardEvent,
 	dispatchInputEvent,
 	goBack,
@@ -339,6 +369,7 @@ function bind(httpServer) {
 
 			socket.on("mouseevent", (e) => tomcat.dispatchMouseEvent(id, e));
 			socket.on("wheelevent", (e) => tomcat.dispatchWheelEvent(id, e));
+			socket.on("touchevent", (e) => tomcat.dispatchTouchEvent(id, e));
 			socket.on("keyboardevent", (e) => tomcat.dispatchKeyboardEvent(id, e));
 			socket.on("inputevent", (e) => tomcat.dispatchInputEvent(id, e));
 			socket.on("goback", () => tomcat.goBack(id));
