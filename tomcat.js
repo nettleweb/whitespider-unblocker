@@ -15,6 +15,11 @@ const browser = await puppeteer.launch({
 		isMobile: false,
 		deviceScaleFactor: 1
 	},
+	args: [
+		"--disable-gpu",
+		"--window-size=1280,720"
+	],
+	pipe: true,
 	timeout: 10000
 });
 
@@ -32,6 +37,18 @@ async function newSession() {
 		accuracy: 0,
 		latitude: 0,
 		longitude: 0
+	});
+	await page.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", {
+		architecture: "",
+		bitness: "",
+		brands: [],
+		fullVersion: "",
+		fullVersionList: [],
+		mobile: false,
+		model: "",
+		platform: "",
+		platformVersion: "",
+		wow64: false
 	});
 
 	const id = clients.length;
