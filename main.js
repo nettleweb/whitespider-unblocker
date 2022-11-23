@@ -122,10 +122,6 @@ async function requestCallback(request, response) {
 	response.end(file, "utf-8");
 }
 
-async function upgradeCallback(request, socket, head) {
-	socket.end("Forbidden", "utf-8");
-}
-
 const bindAddr = config.address;
 const httpPort = config.httpPort;
 const httpsPort = config.httpsPort;
@@ -133,7 +129,6 @@ const httpsPort = config.httpsPort;
 if (httpPort != null && httpPort > 0 && httpPort < 0xffff) {
 	const httpServer = http.createServer({});
 	httpServer.on("request", requestCallback);
-	httpServer.on("upgrade", upgradeCallback);
 	httpServer.listen(httpPort, bindAddr, () => {
 		const addr = httpServer.address();
 		console.log(`HTTP server started on ${addr.address}:${addr.port}`);
@@ -147,7 +142,6 @@ if (httpsPort != null && httpsPort > 0 && httpsPort < 0xffff) {
 		key: fs.readFileSync(config.privKeyPath, { encoding: "utf-8" })
 	});
 	httpsServer.on("request", requestCallback);
-	httpsServer.on("upgrade", upgradeCallback);
 	httpsServer.listen(httpsPort, bindAddr, () => {
 		const addr = httpsServer.address();
 		console.log(`HTTPS server started on ${addr.address}:${addr.port}`);
