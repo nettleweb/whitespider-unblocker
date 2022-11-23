@@ -38,7 +38,7 @@ async function newSession() {
 		latitude: 0,
 		longitude: 0
 	});
-	await page.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", {
+	await page.setUserAgent("Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/109.0", {
 		architecture: "",
 		bitness: "",
 		brands: [],
@@ -58,14 +58,43 @@ async function newSession() {
 
 /**
  * @param {number} id 
+ */
+function hasSession(id) {
+	return clients[id] != null;
+}
+
+/**
+ * @param {string} url 
+ */
+function checkUrl(url) {
+	const hostname = new URL(url).hostname;
+	// for security reasons, reject all requests to localhost
+	if (hostname == "localhost")
+		return false;
+	
+	// reject access to lan
+	const n = hostname.split(".");
+	if (n.length == 4) {
+		if (n[0] == "10") // 10.0.0.0/8
+			return false;
+		if (n[0] == "127") // 127.0.0.0/8
+			return false;
+		if (n[0] == "192" && n[0] == "168") // 192.168.0.0/16
+			return false;
+	}
+	return true;
+}
+
+/**
+ * @param {number} id 
  * @param {string} url 
  */
 async function navigate(id, url) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-
 	try {
+		const page = clients[id];
+		if (!checkUrl(url))
+			url = "http://google.com";
+
 		await page.goto(url, {
 			referer: "",
 			waitUntil: "domcontentloaded",
@@ -82,11 +111,8 @@ async function navigate(id, url) {
  * @param {number} id 
  */
 async function sync(id) {
-	const page = clients[id];
-	if (page == null)
-		return null;
-
 	try {
+		const page = clients[id];
 		const buf = await page.screenshot({
 			encoding: "binary",
 			fromSurface: true,
@@ -109,11 +135,8 @@ async function sync(id) {
  * @param {{ readonly type: string; readonly x: number; readonly y: number; readonly button: string; }} event 
  */
 async function dispatchMouseEvent(id, event) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-
 	try {
+		const page = clients[id];
 		const type = event.type;
 		const x = event.x;
 		const y = event.y;
@@ -148,11 +171,8 @@ async function dispatchMouseEvent(id, event) {
  * @param {{ readonly type: string; readonly deltaX: number; readonly deltaY: number; }} event 
  */
 async function dispatchWheelEvent(id, event) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-
 	try {
+		const page = clients[id];
 		const type = event.type;
 		const deltaX = event.deltaX;
 		const deltaY = event.deltaY;
@@ -175,11 +195,8 @@ async function dispatchWheelEvent(id, event) {
  * @param {{ readonly type: string; readonly x: number; readonly y: number; }} event 
  */
 async function dispatchTouchEvent(id, event) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-
 	try {
+		const page = clients[id];
 		const type = event.type;
 		const x = event.x;
 		const y = event.y;
@@ -202,11 +219,8 @@ async function dispatchTouchEvent(id, event) {
  * @param {{ readonly type: string; readonly key: string; }} event 
  */
 async function dispatchKeyboardEvent(id, event) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-	
 	try {
+		const page = clients[id];
 		const type = event.type;
 		const key = event.key;
 
@@ -234,11 +248,8 @@ async function dispatchKeyboardEvent(id, event) {
  * @param {{ readonly type: string; readonly data: string; }} event 
  */
 async function dispatchInputEvent(id, event) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-	
 	try {
+		const page = clients[id];
 		const type = event.type;
 		const data = event.data;
 
@@ -260,11 +271,8 @@ async function dispatchInputEvent(id, event) {
  * @param {number} id 
  */
 async function goBack(id) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-	
 	try {
+		const page = clients[id];
 		return await page.goBack({
 			waitUntil: "domcontentloaded",
 			timeout: 15000
@@ -279,11 +287,8 @@ async function goBack(id) {
  * @param {number} id 
  */
 async function goForward(id) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-
 	try {
+		const page = clients[id];
 		return await page.goForward({
 			waitUntil: "domcontentloaded",
 			timeout: 15000
@@ -298,11 +303,8 @@ async function goForward(id) {
  * @param {number} id 
  */
 async function refresh(id) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-
 	try {
+		const page = clients[id];
 		return await page.reload({
 			waitUntil: "domcontentloaded",
 			timeout: 15000
@@ -317,11 +319,8 @@ async function refresh(id) {
  * @param {number} id 
  */
 async function endSession(id) {
-	const page = clients[id];
-	if (page == null)
-		return false;
-
 	try {
+		const page = clients[id];
 		await page.close({ runBeforeUnload: false });
 		await page.browserContext().close();
 		delete clients[id];
@@ -334,6 +333,7 @@ async function endSession(id) {
 
 const tomcat = {
 	newSession,
+	hasSession,
 	navigate,
 	sync,
 	dispatchMouseEvent,
@@ -378,22 +378,25 @@ function bind(httpServer) {
 			socket.emit("session_id", id);
 
 			socket.on("sync", async () => {
-				const data = await tomcat.sync(id);
-				if (data != null) {
-					socket.emit("data", data);
-				}
+				if (hasSession(id)) {
+					const data = await sync(id);
+					if (data != null) {
+						socket.emit("data", data);
+					}
+				} else socket.emit("force_reconnect");
 			});
+			socket.on("disconnect", () => endSession(id));
 
-			socket.on("mouseevent", (e) => tomcat.dispatchMouseEvent(id, e));
-			socket.on("wheelevent", (e) => tomcat.dispatchWheelEvent(id, e));
-			socket.on("touchevent", (e) => tomcat.dispatchTouchEvent(id, e));
-			socket.on("keyboardevent", (e) => tomcat.dispatchKeyboardEvent(id, e));
-			socket.on("inputevent", (e) => tomcat.dispatchInputEvent(id, e));
-			socket.on("goback", () => tomcat.goBack(id));
-			socket.on("goforward", () => tomcat.goForward(id));
-			socket.on("refresh", () => tomcat.refresh(id));
-			socket.on("disconnect", () => tomcat.endSession(id));
-			socket.on("navigate", url => tomcat.navigate(id, url));
+			// event listeners
+			socket.on("mouseevent", (e) => hasSession(id) ? dispatchMouseEvent(id, e) : socket.emit("force_reconnect"));
+			socket.on("wheelevent", (e) => hasSession(id) ? dispatchWheelEvent(id, e) : socket.emit("force_reconnect"));
+			socket.on("touchevent", (e) => hasSession(id) ? dispatchTouchEvent(id, e) : socket.emit("force_reconnect"));
+			socket.on("keyboardevent", (e) => hasSession(id) ? dispatchKeyboardEvent(id, e) : socket.emit("force_reconnect"));
+			socket.on("inputevent", (e) => hasSession(id) ? dispatchInputEvent(id, e) : socket.emit("force_reconnect"));
+			socket.on("goback", () => hasSession(id) ? goBack(id) : socket.emit("force_reconnect"));
+			socket.on("goforward", () => hasSession(id) ? goForward(id) : socket.emit("force_reconnect"));
+			socket.on("refresh", () => hasSession(id) ? refresh(id) : socket.emit("force_reconnect"));
+			socket.on("navigate", (url) => hasSession(id) ? navigate(id, url) : socket.emit("force_reconnect"));
 		});
 	});
 };

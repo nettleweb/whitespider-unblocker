@@ -1,6 +1,6 @@
 {
 	"name": "whitespider-unblocker",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Unblock websites through a proxy server, bypass the restrictions of local network and browser extensions.",
 	"author": "Ruochen Jia",
 	"license": "GPL-3.0",
