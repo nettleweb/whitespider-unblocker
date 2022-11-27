@@ -1,6 +1,6 @@
 {
 	"name": "whitespider-unblocker",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Unblock websites through a proxy server, bypass the restrictions of local network and browser extensions.",
 	"author": "Ruochen Jia",
 	"license": "GPL-3.0",
@@ -13,8 +13,8 @@
 		"@types/node": "^18.8.4"
 	},
 	"dependencies": {
-		"puppeteer": "^19.2.2",
-		"socket.io": "^4.5.3"
+		"puppeteer": "^19.3.0",
+		"socket.io": "^4.5.4"
 	},
 	"repository": {
 		"type": "git",

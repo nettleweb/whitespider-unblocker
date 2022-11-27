@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import * as puppeteer from "puppeteer";
 import { Server } from "socket.io";
 
 //////////////////////////
@@ -33,7 +33,7 @@ async function newSession() {
 	const page = await context.newPage();
 	await page.setCacheEnabled(true);
 	await page.setJavaScriptEnabled(true);
-	await page.setGeolocation({ 
+	await page.setGeolocation({
 		accuracy: 0,
 		latitude: 0,
 		longitude: 0
@@ -49,6 +49,19 @@ async function newSession() {
 		platform: "",
 		platformVersion: "",
 		wow64: false
+	});
+
+	// hook popups, force open them in current window
+	context.on("targetcreated", async (e) => {
+		const opener = e.opener();
+		if (opener != null) {
+			const page = await opener.page();
+			await page.goto(e.url(), {
+				referer: opener.url(),
+				timeout: 10000,
+				waitUntil: "domcontentloaded"
+			});
+		}
 	});
 
 	const id = clients.length;
@@ -79,7 +92,7 @@ function checkUrl(url) {
 			return false;
 		if (n[0] == "127") // 127.0.0.0/8
 			return false;
-		if (n[0] == "192" && n[0] == "168") // 192.168.0.0/16
+		if (n[0] == "192" && n[1] == "168") // 192.168.0.0/16
 			return false;
 	}
 	return true;
