@@ -24,11 +24,19 @@ const browser = await puppeteer.launch({
 });
 
 /**
- * @type {(puppeteer.Page | null | undefined)[]}
+ * @type {({ readonly page: puppeteer.Page; readonly quality: number; } | null | undefined)[]}
  */
 const clients = [];
 
-async function newSession() {
+/**
+ * @param {{ readonly quality: number; readonly width: number; readonly height: number; } | null | undefined} config 
+ */
+async function newSession(config) {
+	if (config == null) {
+		console.warn("Session creation ignored, invalid configuration detected");
+		return;
+	}
+
 	const context = await browser.createIncognitoBrowserContext();
 	const page = await context.newPage();
 	await page.setCacheEnabled(true);
@@ -51,6 +59,24 @@ async function newSession() {
 		wow64: false
 	});
 
+	// parse dimension string
+	const width = config.width || 1280;
+	const height = config.height || 720;
+	if (width < 1024 || width > 1920 || height < 720 || height > 1080) {
+		console.warn("Session creation ignored, because invalid dimension configuration detected.");
+		return -1;
+	}
+
+	// set display dimension
+	await page.setViewport({
+		width,
+		height,
+		hasTouch: false,
+		isLandscape: true,
+		isMobile: false,
+		deviceScaleFactor: 1
+	});
+
 	// hook popups, force open them in current window
 	context.on("targetcreated", async (e) => {
 		const opener = e.opener();
@@ -65,7 +91,10 @@ async function newSession() {
 	});
 
 	const id = clients.length;
-	clients[id] = page;
+	clients[id] = {
+		page,
+		quality: parseInt(config.quality || 50)
+	};
 	return id;
 }
 
@@ -104,7 +133,7 @@ function checkUrl(url) {
  */
 async function navigate(id, url) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		if (!checkUrl(url))
 			url = "http://google.com";
 
@@ -125,11 +154,12 @@ async function navigate(id, url) {
  */
 async function sync(id) {
 	try {
-		const page = clients[id];
+		const client = clients[id];
+		const page = client.page;
 		const buf = await page.screenshot({
 			encoding: "binary",
 			fromSurface: true,
-			quality: 50,
+			quality: client.quality,
 			type: "jpeg",
 			fullPage: false
 		});
@@ -149,7 +179,7 @@ async function sync(id) {
  */
 async function dispatchMouseEvent(id, event) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		const type = event.type;
 		const x = event.x;
 		const y = event.y;
@@ -185,7 +215,7 @@ async function dispatchMouseEvent(id, event) {
  */
 async function dispatchWheelEvent(id, event) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		const type = event.type;
 		const deltaX = event.deltaX;
 		const deltaY = event.deltaY;
@@ -209,7 +239,7 @@ async function dispatchWheelEvent(id, event) {
  */
 async function dispatchTouchEvent(id, event) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		const type = event.type;
 		const x = event.x;
 		const y = event.y;
@@ -233,7 +263,7 @@ async function dispatchTouchEvent(id, event) {
  */
 async function dispatchKeyboardEvent(id, event) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		const type = event.type;
 		const key = event.key;
 
@@ -262,7 +292,7 @@ async function dispatchKeyboardEvent(id, event) {
  */
 async function dispatchInputEvent(id, event) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		const type = event.type;
 		const data = event.data;
 
@@ -285,7 +315,7 @@ async function dispatchInputEvent(id, event) {
  */
 async function goBack(id) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		return await page.goBack({
 			waitUntil: "domcontentloaded",
 			timeout: 15000
@@ -301,7 +331,7 @@ async function goBack(id) {
  */
 async function goForward(id) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		return await page.goForward({
 			waitUntil: "domcontentloaded",
 			timeout: 15000
@@ -317,7 +347,7 @@ async function goForward(id) {
  */
 async function refresh(id) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		return await page.reload({
 			waitUntil: "domcontentloaded",
 			timeout: 15000
@@ -333,7 +363,7 @@ async function refresh(id) {
  */
 async function endSession(id) {
 	try {
-		const page = clients[id];
+		const page = clients[id].page;
 		await page.close({ runBeforeUnload: false });
 		await page.browserContext().close();
 		delete clients[id];
@@ -385,8 +415,8 @@ function bind(httpServer) {
 		// emit connect message again to notify the client
 		socket.emit("connected", true);
 
-		socket.on("new_session", async () => {
-			const id = await tomcat.newSession();
+		socket.on("new_session", async (prop) => {
+			const id = await tomcat.newSession(prop);
 			console.log("new session", id);
 			socket.emit("session_id", id);
 

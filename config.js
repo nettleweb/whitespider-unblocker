@@ -55,7 +55,6 @@ const config = {
 	 */
 	allowedHosts: [
 		"googlecom.gq",
-		"www.googlecom.gq",
 		"unblocker.whitespider.cf",
 		"unblocker.whitespider.ga",
 		"unblocker.whitespider.gq",
@@ -67,12 +66,12 @@ const config = {
 	 * A path where SSL certificate is located, only useful when https is enabled
 	 * @type {string}
 	 */
-	certPath: "../cert/cert1.pem",
+	certPath: "../cert/cert.pem",
 	/**
 	 * A path where SSL private key is located, only useful when https is enabled
 	 * @type {string}
 	 */
-	privKeyPath: "../cert/privkey1.pem"
+	privKeyPath: "../cert/privkey.pem"
 };
 
 // binding provided port in env is required by some hosting providers
