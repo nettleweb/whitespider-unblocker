@@ -402,22 +402,24 @@ function bind(httpServer) {
 			origin: "none",
 			credentials: true
 		},
-		connectTimeout: 30000,
-		pingTimeout: 10000,
+		connectTimeout: 25000,
+		pingTimeout: 8000,
 		pingInterval: 20000,
 		httpCompression: true,
 		perMessageDeflate: true,
+		upgradeTimeout: 8000,
 		destroyUpgrade: true,
-		destroyUpgradeTimeout: 1000
+		destroyUpgradeTimeout: 1000,
+		maxHttpBufferSize: 1024
 	});
 
 	io.on("connection", (socket) => {
 		// emit connect message again to notify the client
 		socket.emit("connected", true);
+		socket.setMaxListeners(0);
 
 		socket.on("new_session", async (prop) => {
 			const id = await tomcat.newSession(prop);
-			console.log("new session", id);
 			socket.emit("session_id", id);
 
 			socket.on("sync", async () => {
@@ -428,7 +430,11 @@ function bind(httpServer) {
 					}
 				} else socket.emit("force_reconnect");
 			});
-			socket.on("disconnect", () => endSession(id));
+			socket.on("disconnect", async () => {
+				await endSession(id);
+				socket.removeAllListeners();
+				socket.disconnect(true);
+			});
 
 			// event listeners
 			socket.on("mouseevent", (e) => hasSession(id) ? dispatchMouseEvent(id, e) : socket.emit("force_reconnect"));
