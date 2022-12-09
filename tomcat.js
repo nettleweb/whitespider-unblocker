@@ -415,32 +415,46 @@ function bind(httpServer) {
 
 		socket.on("new_session", async (prop) => {
 			const id = await newSession(prop);
+			if (id < 0) {
+				socket.emit("invalid_session");
+				return;
+			}
 			socket.emit("session_id", id);
 
+			/**
+			 * @type {Function[]}
+			 */
+			const queue = [];
+			const timer = setInterval(() => {
+				const func = queue.shift();
+				if (func != null) {
+					func.apply(void 0, void 0);
+				}
+			}, 10);
+
 			socket.on("sync", async () => {
-				if (hasSession(id)) {
-					const data = await sync(id);
-					if (data != null) {
-						socket.emit("data", data);
-					}
-				} else socket.emit("force_reconnect");
+				const data = await sync(id);
+				if (data != null) {
+					socket.emit("data", data);
+				}
 			});
 			socket.on("disconnect", async () => {
 				await endSession(id);
 				socket.removeAllListeners();
 				socket.disconnect(true);
+				clearInterval(timer);
 			});
 
 			// event listeners
-			socket.on("mouseevent", (e) => hasSession(id) ? dispatchMouseEvent(id, e) : socket.emit("force_reconnect"));
-			socket.on("wheelevent", (e) => hasSession(id) ? dispatchWheelEvent(id, e) : socket.emit("force_reconnect"));
-			socket.on("touchevent", (e) => hasSession(id) ? dispatchTouchEvent(id, e) : socket.emit("force_reconnect"));
-			socket.on("keyboardevent", (e) => hasSession(id) ? dispatchKeyboardEvent(id, e) : socket.emit("force_reconnect"));
-			socket.on("inputevent", (e) => hasSession(id) ? dispatchInputEvent(id, e) : socket.emit("force_reconnect"));
-			socket.on("goback", () => hasSession(id) ? goBack(id) : socket.emit("force_reconnect"));
-			socket.on("goforward", () => hasSession(id) ? goForward(id) : socket.emit("force_reconnect"));
-			socket.on("refresh", () => hasSession(id) ? refresh(id) : socket.emit("force_reconnect"));
-			socket.on("navigate", (url) => hasSession(id) ? navigate(id, url) : socket.emit("force_reconnect"));
+			socket.on("mouseevent", (e) => queue.push(() => dispatchMouseEvent(id, e)));
+			socket.on("wheelevent", (e) => queue.push(() => dispatchWheelEvent(id, e)));
+			socket.on("touchevent", (e) => queue.push(() => dispatchTouchEvent(id, e)));
+			socket.on("keyboardevent", (e) => queue.push(() => dispatchKeyboardEvent(id, e)));
+			socket.on("inputevent", (e) => queue.push(() => dispatchInputEvent(id, e)));
+			socket.on("goback", () => queue.push(() => goBack(id)));
+			socket.on("goforward", () => queue.push(() => goForward(id)));
+			socket.on("refresh", () => queue.push(() => refresh(id)));
+			socket.on("navigate", (url) => queue.push(() => navigate(id, url)));
 		});
 	});
 };
