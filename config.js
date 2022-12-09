@@ -19,12 +19,12 @@ const config = {
 	 * The port for http server, set to 0 or null to disable
 	 * @type {number | null | undefined}
 	 */
-	httpPort: 8080,
+	httpPort: 80,
 	/**
 	 * The port for https server, set to 0 or null to disable
 	 * @type {number | null | undefined}
 	 */
-	httpsPort: 0,
+	httpsPort: 443,
 	/**
 	 * The http headers for non-error (status=200) responses
 	 * @type {object}
