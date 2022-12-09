@@ -369,7 +369,7 @@ async function endSession(id) {
 		const page = clients[id].page;
 		await page.close({ runBeforeUnload: false });
 		await page.browserContext().close();
-		clients.splice(id, 1);
+		delete clients[id];
 		return true;
 	} catch(err) {
 		console.log(err);
