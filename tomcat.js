@@ -29,7 +29,7 @@ const browser = await puppeteer.launch({
 const clients = [];
 
 /**
- * @param {{ readonly quality: number; readonly width: number; readonly height: number; } | null | undefined} config 
+ * @param {{ readonly quality: number; readonly width: number; readonly height: number; readonly useTor: boolean; } | null | undefined} config 
  */
 async function newSession(config) {
 	if (config == null) {
@@ -37,7 +37,18 @@ async function newSession(config) {
 		return -1;
 	}
 
-	const context = await browser.createIncognitoBrowserContext();
+	// parse dimension string
+	const width = config.width || 1280;
+	const height = config.height || 720;
+	if (width < 1024 || width > 1920 || height < 720 || height > 1080) {
+		console.warn("Session creation ignored, because invalid dimension configuration detected.");
+		return -1;
+	}
+
+	const context = await browser.createIncognitoBrowserContext(config.useTor ? {
+		proxyServer: "socks5://127.0.0.1:9050",
+		proxyBypassList: []
+	} : void 0);
 	const page = await context.newPage();
 	await page.setCacheEnabled(true);
 	await page.setJavaScriptEnabled(true);
@@ -58,14 +69,6 @@ async function newSession(config) {
 		platformVersion: "",
 		wow64: false
 	});
-
-	// parse dimension string
-	const width = config.width || 1280;
-	const height = config.height || 720;
-	if (width < 1024 || width > 1920 || height < 720 || height > 1080) {
-		console.warn("Session creation ignored, because invalid dimension configuration detected.");
-		return -1;
-	}
 
 	// set display dimension
 	await page.setViewport({
