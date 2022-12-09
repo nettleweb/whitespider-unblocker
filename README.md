@@ -2,14 +2,12 @@
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/ruochenjia/whitespider-unblocker) <br />
 Unblock websites through a proxy server, bypass the restrictions of local network and browser extensions. <br />
 Link to website: https://unblocker.whitespider.gq <br />
-Alternative link: https://unblocker.ruochenjia.repl.co
 
-## Sites supported
- - YouTube
- - Instagram
- - Discord
- - GitHub
- - reCAPTCHA and hCAPTCHA
+## Features
+ - Multiple working mode, switch based on what you need.
+ - Can bypass both network and extension restrictions.
+ - Supports almost all websites.
+ - Supports TOR (.onion websites)
 
 ## Quick Start
 1. Clone this repository to your server.
@@ -27,8 +25,15 @@ $ npm run start
 ```
 
 ## Mirror Links
-If the links provided here have been restricted, you can visit https://sites.google.com/view/wsug-mirrors to get a list of mirror links. <br />
-Mirrors can be slower than the main link, only use them when you really need.
+If the main link has been restricted, you can try using a mirror link shown below.
+ - https://googlecom.gq
+ - https://untrihexium.gq
+ - https://wsu.repl.ga
+ - https://unblocker.whitespider.cf
+ - https://unblocker.whitespider.ga
+ - https://unblocker.whitespider.gq
+ - https://unblocker.whitespider.ml
+ - https://unblocker.whitespider.tk
 
 ## License
-This repository (include all sub-repositories) is licensed under GPL-3.0 license, see `LICENSE.md` for more details.
+This repository (includes all sub-repositories) is licensed under GPL-3.0 license, see `LICENSE.md` for more details.
