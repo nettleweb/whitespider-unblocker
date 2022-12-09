@@ -24,7 +24,7 @@ const browser = await puppeteer.launch({
 });
 
 /**
- * @type {({ readonly page: puppeteer.Page; readonly quality: number; } | null | undefined)[]}
+ * @type {({ readonly page: puppeteer.Page; readonly quality: number; })[]}
  */
 const clients = [];
 
@@ -34,7 +34,7 @@ const clients = [];
 async function newSession(config) {
 	if (config == null) {
 		console.warn("Session creation ignored, invalid configuration detected");
-		return;
+		return -1;
 	}
 
 	const context = await browser.createIncognitoBrowserContext();
@@ -82,11 +82,15 @@ async function newSession(config) {
 		const opener = e.opener();
 		if (opener != null) {
 			const page = await opener.page();
-			await page.goto(e.url(), {
-				referer: opener.url(),
-				timeout: 10000,
-				waitUntil: "domcontentloaded"
-			});
+			if (page != null) {
+				await page.goto(e.url(), {
+					referer: opener.url(),
+					timeout: 10000,
+					waitUntil: "domcontentloaded"
+				});
+			}
+			// close hanging page
+			await (await e.page())?.close({ runBeforeUnload: false });
 		}
 	});
 
@@ -161,10 +165,11 @@ async function sync(id) {
 			fromSurface: true,
 			quality: client.quality,
 			type: "jpeg",
-			fullPage: false
+			fullPage: false,
+			omitBackground: true
 		});
 		return {
-			buf: buf instanceof Buffer ? buf.buffer : null,
+			buf,
 			url: page.url()
 		};
 	} catch(err) {
@@ -186,11 +191,6 @@ async function dispatchMouseEvent(id, event) {
 		const button = event.button;
 
 		switch (type) {
-			case "contextmenu":
-			case "click":
-				// deprecated
-				await page.mouse.click(x, y, { button });
-				return true;
 			case "mousedown":
 				await page.mouse.down({ button, clickCount: 1 });
 				return true;
@@ -366,7 +366,7 @@ async function endSession(id) {
 		const page = clients[id].page;
 		await page.close({ runBeforeUnload: false });
 		await page.browserContext().close();
-		delete clients[id];
+		clients.splice(id, 1);
 		return true;
 	} catch(err) {
 		console.log(err);
@@ -414,7 +414,7 @@ function bind(httpServer) {
 		socket.setMaxListeners(0);
 
 		socket.on("new_session", async (prop) => {
-			const id = await tomcat.newSession(prop);
+			const id = await newSession(prop);
 			socket.emit("session_id", id);
 
 			socket.on("sync", async () => {

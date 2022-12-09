@@ -8,13 +8,6 @@ import config from "./config.js";
 import statusMessages from "./status.js";
 import mimeTypes from "./mime.js";
 
-Array.prototype.remove = function(element) {
-	for (let i = 0; i < this.length; i++) {
-		if (this[i] == element)
-			this.splice(i, 1);
-	}
-};
-
 /**
  * @param {number} code
  * @param {http.ServerResponse} response 
@@ -112,11 +105,6 @@ function requestCallback(request, response) {
 	const head = { ...config.headers };
 	const extName = _path.extname(path);
 	head["Content-Type"] =  extName in mimeTypes ? mimeTypes[extName] : "application/unknown";
-
-	if (url.pathname.startsWith("/lfs/")) {
-		// special usage paths
-		head["Access-Control-Allow-Origin"] = "*";
-	}
 
 	response.writeHead(200, "", head);
 	response.end(file, "utf-8");
