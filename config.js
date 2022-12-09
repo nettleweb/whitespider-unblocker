@@ -60,6 +60,7 @@ const config = {
 		"unblocker.whitespider.gq",
 		"unblocker.whitespider.ml",
 		"unblocker.whitespider.tk",
+		"wsu.repl.ga",
 		"localhost"
 	],
 	/**
