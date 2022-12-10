@@ -16,10 +16,15 @@ const browser = await puppeteer.launch({
 		deviceScaleFactor: 1
 	},
 	args: [
+		'--no-sandbox',
+        '--disable-setuid-sandbox',
 		"--disable-gpu",
+		"--disable-dev-shm-usage",
+		"--disable-infobars",
 		"--window-size=1280,720"
 	],
 	pipe: true,
+	product: "chrome",
 	timeout: 10000
 });
 
@@ -424,17 +429,6 @@ function bind(httpServer) {
 			}
 			socket.emit("session_id", id);
 
-			/**
-			 * @type {Function[]}
-			 */
-			const queue = [];
-			const timer = setInterval(() => {
-				const func = queue.shift();
-				if (func != null) {
-					func.apply(void 0, void 0);
-				}
-			}, 10);
-
 			socket.on("sync", async () => {
 				const data = await sync(id);
 				if (data != null) {
@@ -445,19 +439,18 @@ function bind(httpServer) {
 				await endSession(id);
 				socket.removeAllListeners();
 				socket.disconnect(true);
-				clearInterval(timer);
 			});
 
 			// event listeners
-			socket.on("mouseevent", (e) => queue.push(() => dispatchMouseEvent(id, e)));
-			socket.on("wheelevent", (e) => queue.push(() => dispatchWheelEvent(id, e)));
-			socket.on("touchevent", (e) => queue.push(() => dispatchTouchEvent(id, e)));
-			socket.on("keyboardevent", (e) => queue.push(() => dispatchKeyboardEvent(id, e)));
-			socket.on("inputevent", (e) => queue.push(() => dispatchInputEvent(id, e)));
-			socket.on("goback", () => queue.push(() => goBack(id)));
-			socket.on("goforward", () => queue.push(() => goForward(id)));
-			socket.on("refresh", () => queue.push(() => refresh(id)));
-			socket.on("navigate", (url) => queue.push(() => navigate(id, url)));
+			socket.on("mouseevent", (e) => dispatchMouseEvent(id, e));
+			socket.on("wheelevent", (e) => dispatchWheelEvent(id, e));
+			socket.on("touchevent", (e) => dispatchTouchEvent(id, e));
+			socket.on("keyboardevent", (e) => dispatchKeyboardEvent(id, e));
+			socket.on("inputevent", (e) => dispatchInputEvent(id, e));
+			socket.on("goback", () => goBack(id));
+			socket.on("goforward", () => goForward(id));
+			socket.on("refresh", () => refresh(id));
+			socket.on("navigate", (url) => navigate(id, url));
 		});
 	});
 };
