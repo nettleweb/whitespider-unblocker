@@ -16,12 +16,15 @@ const browser = await puppeteer.launch({
 		deviceScaleFactor: 1
 	},
 	args: [
-		'--no-sandbox',
-        '--disable-setuid-sandbox',
-		"--disable-gpu",
+		"--no-sandbox",
+		"--disable-setuid-sandbox",
+		"--disable-web-security",
 		"--disable-dev-shm-usage",
 		"--disable-infobars",
-		"--window-size=1280,720"
+		"--disable-features=site-per-process",
+		"--disable-gpu",
+		"--window-size=1280,720",
+		"--window-position=0,0"
 	],
 	pipe: true,
 	product: "chrome",
