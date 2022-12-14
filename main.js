@@ -1,12 +1,25 @@
 import http from "http";
 import https from "https";
 import fs from "fs";
-import {} from "./log.js";
-import { bind } from "./tomcat.js";
 import { default as _path } from "path";
 import config from "./config.js";
 import statusMessages from "./status.js";
 import mimeTypes from "./mime.js";
+import { out, lock } from "./streamsetup.js";
+
+out.clear();
+out.color("1;36;25")("WhiteSpider Unblocker v1.3.0");
+out.color("1;35;25")(" Created by Ruochen Jia\n");
+await lock(800);
+out.color(1)("Source Code: https://github.com/ruochenjia/whitespider-unblocker\n");
+out.color(1)("Official Mirror: https://unblocker.whitespider.gq\n");
+out.color(1)("More projects created by me: https://github.com/ruochenjia\n");
+await lock(800);
+out.color("1;33")("\nStarting server...\n\n");
+await lock(1000);
+
+// Import tomcat after print information as it is likely to crash.
+const bind = (await import("./tomcat.js")).bind;
 
 /**
  * @param {number} code
@@ -119,7 +132,7 @@ if (httpPort != null && httpPort > 0 && httpPort < 0xffff) {
 	httpServer.on("request", requestCallback);
 	httpServer.listen(httpPort, bindAddr, () => {
 		const addr = httpServer.address();
-		console.log(`HTTP server started on ${addr.address}:${addr.port}`);
+		out.color("32;1")(`HTTP server started on ${addr.address}:${addr.port}\n`);
 	});
 	bind(httpServer);
 }
@@ -132,7 +145,7 @@ if (httpsPort != null && httpsPort > 0 && httpsPort < 0xffff) {
 	httpsServer.on("request", requestCallback);
 	httpsServer.listen(httpsPort, bindAddr, () => {
 		const addr = httpsServer.address();
-		console.log(`HTTPS server started on ${addr.address}:${addr.port}`);
+		out.color("32;1")(`HTTPS server started on ${addr.address}:${addr.port}`);
 	});
 	bind(httpsServer);
 }

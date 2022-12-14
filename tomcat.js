@@ -28,6 +28,7 @@ const browser = await puppeteer.launch({
 	],
 	pipe: true,
 	product: "chrome",
+	dumpio: true,
 	timeout: 10000
 });
 
