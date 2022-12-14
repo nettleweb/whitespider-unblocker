@@ -1,32 +1,30 @@
 
 /**
- * Configuration for http server
+ * Server configurations
  */
 const config = {
 	/**
-	 * Set the value to false to disable logging
-	 * @type {boolean}
-	 */
-	debug: true,
-	/**
 	 * The binding address for http and https server.
-	 *  - '0.0.0.0' for binding every reachable address
-	 *  - '127.0.0.1' for binding localhost only
+	 *  - '0.0.0.0' - bind every reachable address.
+	 *  - '127.0.0.1' - bind localhost only.
 	 * @type {string}
+	 * @default "0.0.0.0"
 	 */
 	address: "0.0.0.0",
 	/**
-	 * The port for http server, set to 0 or null to disable
+	 * The port for http server, set to 0 or null to disable.
 	 * @type {number | null | undefined}
+	 * @default 80
 	 */
 	httpPort: 80,
 	/**
 	 * The port for https server, set to 0 or null to disable
 	 * @type {number | null | undefined}
+	 * @default 443
 	 */
 	httpsPort: 443,
 	/**
-	 * The http headers for non-error (status=200) responses
+	 * The http headers for non-error (status=200) responses.
 	 * @type {object}
 	 */
 	headers: {
@@ -35,7 +33,7 @@ const config = {
 		"X-Content-Type-Options": "nosniff"
 	},
 	/**
-	 * The http headers for error responses (status != 200)
+	 * The http headers for error responses.
 	 * @type {object}
 	 */
 	errorHeaders: {
@@ -64,15 +62,30 @@ const config = {
 		"localhost"
 	],
 	/**
-	 * A path where SSL certificate is located, only useful when https is enabled
+	 * The path where SSL certificate is located, only useful when https is enabled.
 	 * @type {string}
 	 */
 	certPath: "../cert/cert.pem",
 	/**
-	 * A path where SSL private key is located, only useful when https is enabled
+	 * The path where SSL private key is located, only useful when https is enabled.
 	 * @type {string}
 	 */
-	privKeyPath: "../cert/privkey.pem"
+	privKeyPath: "../cert/privkey.pem",
+	/**
+	 * Configurations for Tomcat server
+	 */
+	tomcat: {
+		/**
+		 * @type {string | null | undefined}
+		 * @default null
+		 */
+		torProxyAddress: "socks5://127.0.0.1:9050",
+		/**
+		 * @type {string | null | undefined}
+		 * @default null
+		 */
+		proxyAddress: "socks5://127.0.0.1:9999"
+	}
 };
 
 // binding provided port in env is required by some hosting providers

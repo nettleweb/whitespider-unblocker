@@ -1,5 +1,6 @@
 import * as puppeteer from "puppeteer";
 import { Server } from "socket.io";
+import { default as cfg } from "./config.js"
 
 //////////////////////////
 // BROWSER / Core APIs
@@ -33,31 +34,36 @@ const browser = await puppeteer.launch({
 });
 
 /**
- * @type {({ readonly page: puppeteer.Page; readonly quality: number; })[]}
+ * @type {(puppeteer.Page)[]}
  */
 const clients = [];
 
 /**
- * @param {{ readonly quality: number; readonly width: number; readonly height: number; readonly useTor: boolean; } | null | undefined} config 
+ * @param {{ readonly width?: number; readonly height?: number; readonly useTor?: boolean; } | null | undefined} config 
  */
 async function newSession(config) {
 	if (config == null) {
-		console.warn("Session creation ignored, invalid configuration detected");
+		console.warn("Session creation ignored, missing configuration");
 		return -1;
 	}
-
-	// parse dimension string
-	const width = config.width || 1280;
-	const height = config.height || 720;
-	if (width < 1024 || width > 1920 || height < 720 || height > 1080) {
+	const width = config.width;
+	const height = config.height;
+	const useTor = config.useTor;
+	if (width == null || height == null || useTor == null) {
+		console.warn("Session creation ignore, invalid configuration detected");
+		return -1;
+	}
+	if (width < 360 || width > 2048 || height < 360 || height > 2048) {
 		console.warn("Session creation ignored, because invalid dimension configuration detected.");
 		return -1;
 	}
 
-	const context = await browser.createIncognitoBrowserContext(config.useTor ? {
-		proxyServer: "socks5://127.0.0.1:9050",
+	const torProxyAddress = cfg.tomcat.torProxyAddress;
+	const proxyAddress = cfg.tomcat.proxyAddress;
+	const context = await browser.createIncognitoBrowserContext({
+		proxyServer: (torProxyAddress != null && useTor) ? torProxyAddress : (proxyAddress == null ? void 0 : proxyAddress),
 		proxyBypassList: []
-	} : void 0);
+	});
 	const page = await context.newPage();
 	await page.setCacheEnabled(true);
 	await page.setJavaScriptEnabled(true);
@@ -78,8 +84,6 @@ async function newSession(config) {
 		platformVersion: "",
 		wow64: false
 	});
-
-	// set display dimension
 	await page.setViewport({
 		width,
 		height,
@@ -107,10 +111,7 @@ async function newSession(config) {
 	});
 
 	const id = clients.length;
-	clients[id] = {
-		page,
-		quality: parseInt(config.quality || 50)
-	};
+	clients[id] = page;
 	return id;
 }
 
@@ -149,10 +150,9 @@ function checkUrl(url) {
  */
 async function navigate(id, url) {
 	try {
-		const page = clients[id].page;
-		if (!checkUrl(url))
-			url = "http://google.com";
-
+		const page = clients[id];
+		// if (!checkUrl(url))
+		// 	url = "http://google.com";
 		await page.goto(url, {
 			referer: "",
 			waitUntil: "domcontentloaded",
@@ -170,20 +170,16 @@ async function navigate(id, url) {
  */
 async function sync(id) {
 	try {
-		const client = clients[id];
-		const page = client.page;
+		const page = clients[id];
 		const buf = await page.screenshot({
 			encoding: "binary",
-			fromSurface: true,
-			quality: client.quality,
 			type: "jpeg",
+			fromSurface: true,
 			fullPage: false,
+			quality: 50,
 			omitBackground: true
 		});
-		return {
-			buf,
-			url: page.url()
-		};
+		return { buf, url: page.url() };
 	} catch(err) {
 		console.log(err);
 		return null;
@@ -196,7 +192,7 @@ async function sync(id) {
  */
 async function dispatchMouseEvent(id, event) {
 	try {
-		const page = clients[id].page;
+		const page = clients[id];
 		const type = event.type;
 		const x = event.x;
 		const y = event.y;
@@ -227,7 +223,7 @@ async function dispatchMouseEvent(id, event) {
  */
 async function dispatchWheelEvent(id, event) {
 	try {
-		const page = clients[id].page;
+		const page = clients[id];
 		const type = event.type;
 		const deltaX = event.deltaX;
 		const deltaY = event.deltaY;
@@ -247,35 +243,11 @@ async function dispatchWheelEvent(id, event) {
 
 /**
  * @param {number} id 
- * @param {{ readonly type: string; readonly x: number; readonly y: number; }} event 
- */
-async function dispatchTouchEvent(id, event) {
-	try {
-		const page = clients[id].page;
-		const type = event.type;
-		const x = event.x;
-		const y = event.y;
-
-		switch (type) {
-			case "touchend":
-				await page.touchscreen.tap(x, y);
-				return true;
-			default:
-				throw new Error("Invalid event type: " + type);
-		}
-	} catch(err) {
-		console.log(err);
-		return false;
-	}
-}
-
-/**
- * @param {number} id 
  * @param {{ readonly type: string; readonly key: string; }} event 
  */
 async function dispatchKeyboardEvent(id, event) {
 	try {
-		const page = clients[id].page;
+		const page = clients[id];
 		const type = event.type;
 		const key = event.key;
 
@@ -285,33 +257,6 @@ async function dispatchKeyboardEvent(id, event) {
 				return true;
 			case "keyup":
 				await page.keyboard.up(key);
-				return true;
-			case "keypress":
-				await page.keyboard.press(key);
-				return true;
-			default:
-				throw new Error("Invalid event type: " + type);
-		}
-	} catch(err) {
-		console.log(err);
-		return false;
-	}
-}
-
-/**
- * @param {number} id 
- * @param {{ readonly type: string; readonly data: string; }} event 
- */
-async function dispatchInputEvent(id, event) {
-	try {
-		const page = clients[id].page;
-		const type = event.type;
-		const data = event.data;
-
-		switch (type) {
-			case "input":
-				// deprecated
-				await page.keyboard.sendCharacter(data);
 				return true;
 			default:
 				throw new Error("Invalid event type: " + type);
@@ -327,7 +272,7 @@ async function dispatchInputEvent(id, event) {
  */
 async function goBack(id) {
 	try {
-		const page = clients[id].page;
+		const page = clients[id];
 		return await page.goBack({
 			waitUntil: "domcontentloaded",
 			timeout: 15000
@@ -343,7 +288,7 @@ async function goBack(id) {
  */
 async function goForward(id) {
 	try {
-		const page = clients[id].page;
+		const page = clients[id];
 		return await page.goForward({
 			waitUntil: "domcontentloaded",
 			timeout: 15000
@@ -359,7 +304,7 @@ async function goForward(id) {
  */
 async function refresh(id) {
 	try {
-		const page = clients[id].page;
+		const page = clients[id];
 		return await page.reload({
 			waitUntil: "domcontentloaded",
 			timeout: 15000
@@ -375,7 +320,7 @@ async function refresh(id) {
  */
 async function endSession(id) {
 	try {
-		const page = clients[id].page;
+		const page = clients[id];
 		await page.close({ runBeforeUnload: false });
 		await page.browserContext().close();
 		delete clients[id];
@@ -393,9 +338,7 @@ const tomcat = {
 	sync,
 	dispatchMouseEvent,
 	dispatchWheelEvent,
-	dispatchTouchEvent,
 	dispatchKeyboardEvent,
-	dispatchInputEvent,
 	goBack,
 	goForward,
 	refresh,
@@ -433,13 +376,15 @@ function bind(httpServer) {
 			}
 			socket.emit("session_id", id);
 
-			socket.on("sync", async () => {
+			const timer = setInterval(async () => {
 				const data = await sync(id);
 				if (data != null) {
 					socket.emit("data", data);
 				}
-			});
+			}, 100);
+
 			socket.on("disconnect", async () => {
+				clearInterval(timer);
 				await endSession(id);
 				socket.removeAllListeners();
 				socket.disconnect(true);
@@ -448,9 +393,7 @@ function bind(httpServer) {
 			// event listeners
 			socket.on("mouseevent", (e) => dispatchMouseEvent(id, e));
 			socket.on("wheelevent", (e) => dispatchWheelEvent(id, e));
-			socket.on("touchevent", (e) => dispatchTouchEvent(id, e));
 			socket.on("keyboardevent", (e) => dispatchKeyboardEvent(id, e));
-			socket.on("inputevent", (e) => dispatchInputEvent(id, e));
 			socket.on("goback", () => goBack(id));
 			socket.on("goforward", () => goForward(id));
 			socket.on("refresh", () => refresh(id));
