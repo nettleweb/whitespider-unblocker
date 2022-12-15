@@ -390,6 +390,15 @@ function streamSetup(stream, encoding) {
 		Stream.rewrite = rewrite;
 		Stream.rewriteLine = rewriteLine;
 		Stream.color = color;
+	} else {
+		const stub = () => _this;
+		Stream.curTo = stub;
+		Stream.moveCus = stub;
+		Stream.clearLine = stub;
+		Stream.clear = stub;
+		Stream.rewrite = stub;
+		Stream.rewriteLine = stub;
+		Stream.color = stub;
 	}
 
 	return _this;

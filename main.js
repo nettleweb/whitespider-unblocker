@@ -53,13 +53,7 @@ function httpError(code, response) {
  * @param {string} host
  */
 function verifyHost(host) {
-	const hostname = host.split(":")[0];
-	if (!config.allowedHosts.includes(hostname)) {
-		// prevent unauthorized hosts
-		return false;
-	}
-
-	return true;
+	return config.allowedHosts.includes(host.split(":")[0]);
 }
 
 /**
@@ -105,6 +99,11 @@ function requestCallback(request, response) {
 	if (rawPath == null || method == null) {
 		httpError(400, response);
 		return;
+	}
+
+	if (config.allowPing && method === "PING") {
+		response.writeHead(200, "PING_SUCCESS", {});
+		response.end("RlVDSyBZT1UgR09PR0xF/b+AkICB", "utf-8");
 	}
 
 	const url = new URL(`https://${host}${rawPath}`);
