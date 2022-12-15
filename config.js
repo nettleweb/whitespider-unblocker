@@ -85,7 +85,12 @@ const config = {
 		 * @default null
 		 */
 		proxyAddress: "socks5://127.0.0.1:9999"
-	}
+	},
+	/**
+	 * @type {boolean}
+	 * @default true
+	 */
+	allowPing: true
 };
 
 // binding provided port in env is required by some hosting providers
