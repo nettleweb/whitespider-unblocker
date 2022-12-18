@@ -5,6 +5,8 @@ import { default as _path } from "path";
 import config from "./config.js";
 import statusMessages from "./status.js";
 import mimeTypes from "./mime.js";
+import tomcat from "./tomcat.js";
+import { Server } from "socket.io";
 import { out, lock } from "./streamsetup.js";
 
 out.clear();
@@ -17,9 +19,6 @@ out.color(1)("More projects created by me: https://github.com/ruochenjia\n");
 await lock(800);
 out.color("1;33")("\nStarting server...\n\n");
 await lock(1000);
-
-// Import tomcat after print information as it is likely to crash.
-const bind = (await import("./tomcat.js")).bind;
 
 /**
  * @param {number} code
@@ -116,10 +115,61 @@ function requestCallback(request, response) {
 	const file = fs.readFileSync(path);
 	const head = { ...config.headers };
 	const extName = _path.extname(path);
-	head["Content-Type"] =  extName in mimeTypes ? mimeTypes[extName] : "application/unknown";
+	head["Content-Type"] = extName in mimeTypes ? mimeTypes[extName] : "application/unknown";
 
 	response.writeHead(200, "", head);
 	response.end(file, "utf-8");
+}
+
+function bindIo(httpServer) {
+	const io = new Server(httpServer, {
+		connectTimeout: 25000,
+		pingTimeout: 8000,
+		pingInterval: 20000,
+		httpCompression: true,
+		perMessageDeflate: true,
+		upgradeTimeout: 8000,
+		destroyUpgrade: true,
+		destroyUpgradeTimeout: 1000,
+		maxHttpBufferSize: 1024
+	});
+
+	io.on("connection", (socket) => {
+		// emit connect message again to notify the client
+		socket.emit("connected", true);
+		socket.setMaxListeners(0);
+
+		socket.on("new_session", async (prop) => {
+			const id = await tomcat.newSession(prop);
+			if (id < 0) {
+				socket.emit("invalid_session");
+				return;
+			}
+			socket.emit("session_id", id);
+
+			// connection functions
+			socket.on("sync", async () => {
+				const data = await tomcat.sync(id);
+				if (data != null) {
+					socket.emit("data", data);
+				}
+			});
+			socket.on("disconnect", async () => {
+				await tomcat.endSession(id);
+				socket.removeAllListeners();
+				socket.disconnect(true);
+			});
+
+			// event listeners
+			socket.on("mouseevent", (e) => tomcat.dispatchMouseEvent(id, e));
+			socket.on("wheelevent", (e) => tomcat.dispatchWheelEvent(id, e));
+			socket.on("keyboardevent", (e) => tomcat.dispatchKeyboardEvent(id, e));
+			socket.on("goback", () => tomcat.goBack(id));
+			socket.on("goforward", () => tomcat.goForward(id));
+			socket.on("refresh", () => tomcat.refresh(id));
+			socket.on("navigate", (url) => tomcat.navigate(id, url));
+		});
+	});
 }
 
 const bindAddr = config.address;
@@ -131,9 +181,9 @@ if (httpPort != null && httpPort > 0 && httpPort < 0xffff) {
 	httpServer.on("request", requestCallback);
 	httpServer.listen(httpPort, bindAddr, () => {
 		const addr = httpServer.address();
-		out.color("32;1")(`HTTP server started on ${addr.address}:${addr.port}\n`);
+		console.log(`HTTP server started on ${addr.address}:${addr.port}\n`);
 	});
-	bind(httpServer);
+	bindIo(httpServer);
 }
 
 if (httpsPort != null && httpsPort > 0 && httpsPort < 0xffff) {
@@ -144,7 +194,7 @@ if (httpsPort != null && httpsPort > 0 && httpsPort < 0xffff) {
 	httpsServer.on("request", requestCallback);
 	httpsServer.listen(httpsPort, bindAddr, () => {
 		const addr = httpsServer.address();
-		out.color("32;1")(`HTTPS server started on ${addr.address}:${addr.port}`);
+		console.log(`HTTPS server started on ${addr.address}:${addr.port}\n`);
 	});
-	bind(httpsServer);
+	bindIo(httpsServer);
 }

@@ -84,7 +84,7 @@ const config = {
 		 * @type {string | null | undefined}
 		 * @default null
 		 */
-		proxyAddress: "socks5://127.0.0.1:9999"
+		proxyAddress: null
 	},
 	/**
 	 * @type {boolean}

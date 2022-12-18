@@ -1,10 +1,5 @@
 import * as puppeteer from "puppeteer";
-import { Server } from "socket.io";
-import { default as cfg } from "./config.js"
-
-//////////////////////////
-// BROWSER / Core APIs
-/////////////////////////
+import { default as cfg } from "./config.js";
 
 const browser = await puppeteer.launch({
 	headless: true,
@@ -22,7 +17,6 @@ const browser = await puppeteer.launch({
 		"--disable-web-security",
 		"--disable-dev-shm-usage",
 		"--disable-infobars",
-		"--disable-features=site-per-process",
 		"--disable-gpu",
 		"--window-size=1280,720",
 		"--window-position=0,0"
@@ -34,7 +28,7 @@ const browser = await puppeteer.launch({
 });
 
 /**
- * @type {(puppeteer.Page)[]}
+ * @type {puppeteer.Page[]}
  */
 const clients = [];
 
@@ -123,43 +117,19 @@ function hasSession(id) {
 }
 
 /**
- * @param {string} url 
- */
-function checkUrl(url) {
-	const hostname = new URL(url).hostname;
-	// for security reasons, reject all requests to localhost
-	if (hostname == "localhost")
-		return false;
-	
-	// reject access to lan
-	const n = hostname.split(".");
-	if (n.length == 4) {
-		if (n[0] == "10") // 10.0.0.0/8
-			return false;
-		if (n[0] == "127") // 127.0.0.0/8
-			return false;
-		if (n[0] == "192" && n[1] == "168") // 192.168.0.0/16
-			return false;
-	}
-	return true;
-}
-
-/**
  * @param {number} id 
  * @param {string} url 
  */
 async function navigate(id, url) {
 	try {
 		const page = clients[id];
-		// if (!checkUrl(url))
-		// 	url = "http://google.com";
 		await page.goto(url, {
 			referer: "",
 			waitUntil: "domcontentloaded",
 			timeout: 20000
 		});
 		return true;
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return false;
 	}
@@ -180,7 +150,7 @@ async function sync(id) {
 			omitBackground: true
 		});
 		return { buf, url: page.url() };
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return null;
 	}
@@ -211,7 +181,7 @@ async function dispatchMouseEvent(id, event) {
 			default:
 				throw new Error("Invalid event type: " + type);
 		}
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return false;
 	}
@@ -235,7 +205,7 @@ async function dispatchWheelEvent(id, event) {
 			default:
 				throw new Error("Invalid event type: " + type);
 		}
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return false;
 	}
@@ -261,7 +231,7 @@ async function dispatchKeyboardEvent(id, event) {
 			default:
 				throw new Error("Invalid event type: " + type);
 		}
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return false;
 	}
@@ -277,7 +247,7 @@ async function goBack(id) {
 			waitUntil: "domcontentloaded",
 			timeout: 15000
 		}) != null;
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return false;
 	}
@@ -293,7 +263,7 @@ async function goForward(id) {
 			waitUntil: "domcontentloaded",
 			timeout: 15000
 		}) != null;
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return false;
 	}
@@ -309,7 +279,7 @@ async function refresh(id) {
 			waitUntil: "domcontentloaded",
 			timeout: 15000
 		}) != null;
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return false;
 	}
@@ -325,7 +295,7 @@ async function endSession(id) {
 		await page.browserContext().close();
 		delete clients[id];
 		return true;
-	} catch(err) {
+	} catch (err) {
 		console.log(err);
 		return false;
 	}
@@ -345,62 +315,4 @@ const tomcat = {
 	endSession
 };
 
-
-//////////////////////////
-// Extended APIs for NodeJs http server
-//////////////////////////
-
-function bind(httpServer) {
-	const io = new Server(httpServer, {
-		connectTimeout: 25000,
-		pingTimeout: 8000,
-		pingInterval: 20000,
-		httpCompression: true,
-		perMessageDeflate: true,
-		upgradeTimeout: 8000,
-		destroyUpgrade: true,
-		destroyUpgradeTimeout: 1000,
-		maxHttpBufferSize: 1024
-	});
-
-	io.on("connection", (socket) => {
-		// emit connect message again to notify the client
-		socket.emit("connected", true);
-		socket.setMaxListeners(0);
-
-		socket.on("new_session", async (prop) => {
-			const id = await newSession(prop);
-			if (id < 0) {
-				socket.emit("invalid_session");
-				return;
-			}
-			socket.emit("session_id", id);
-
-			const timer = setInterval(async () => {
-				const data = await sync(id);
-				if (data != null) {
-					socket.emit("data", data);
-				}
-			}, 100);
-
-			socket.on("disconnect", async () => {
-				clearInterval(timer);
-				await endSession(id);
-				socket.removeAllListeners();
-				socket.disconnect(true);
-			});
-
-			// event listeners
-			socket.on("mouseevent", (e) => dispatchMouseEvent(id, e));
-			socket.on("wheelevent", (e) => dispatchWheelEvent(id, e));
-			socket.on("keyboardevent", (e) => dispatchKeyboardEvent(id, e));
-			socket.on("goback", () => goBack(id));
-			socket.on("goforward", () => goForward(id));
-			socket.on("refresh", () => refresh(id));
-			socket.on("navigate", (url) => navigate(id, url));
-		});
-	});
-};
-
-export { bind };
 export default tomcat;
