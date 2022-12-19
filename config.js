@@ -22,7 +22,7 @@ const config = {
 	 * @type {number | null | undefined}
 	 * @default 443
 	 */
-	httpsPort: 443,
+	httpsPort: 0,
 	/**
 	 * The http headers for non-error (status=200) responses.
 	 * @type {object}

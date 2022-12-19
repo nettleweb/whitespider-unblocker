@@ -7,18 +7,7 @@ import statusMessages from "./status.js";
 import mimeTypes from "./mime.js";
 import tomcat from "./tomcat.js";
 import { Server } from "socket.io";
-import { out, lock } from "./streamsetup.js";
-
-out.clear();
-out.color("1;36;25")("WhiteSpider Unblocker v1.3.0");
-out.color("1;35;25")(" Created by Ruochen Jia\n");
-await lock(800);
-out.color(1)("Source Code: https://github.com/ruochenjia/whitespider-unblocker\n");
-out.color(1)("Official Mirror: https://unblocker.whitespider.gq\n");
-out.color(1)("More projects created by me: https://github.com/ruochenjia\n");
-await lock(800);
-out.color("1;33")("\nStarting server...\n\n");
-await lock(1000);
+import {} from "./streamsetup.js";
 
 /**
  * @param {number} code

@@ -1,18 +1,18 @@
 # WhiteSpider Unblocker
-![GitHub package.json version](https://img.shields.io/github/package-json/v/ruochenjia/whitespider-unblocker) <br />
+![GitHub package.json version](https://img.shields.io/github/package-json/v/chromehackteam/whitespider-unblocker) <br />
 Unblock websites through a proxy server, bypass the restrictions of local network and browser extensions. <br />
 Link to website: https://unblocker.whitespider.gq <br />
 
 ## Features
  - Multiple working mode, switch based on what you need.
  - Can bypass both network and extension restrictions.
- - Supports almost all websites.
- - Supports TOR (.onion websites)
+ - Supports all websites.
+ - Supports TOR
 
 ## Quick Start
 1. Clone this repository to your server.
 ```sh
-$ git clone --recurse-submodules https://github.com/ruochenjia/whitespider-unblocker.git
+$ git clone --recurse-submodules https://github.com/chromehackteam/whitespider-unblocker.git
 ```
 2. Install dependencies.
 ```sh

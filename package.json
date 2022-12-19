@@ -1,8 +1,8 @@
 {
 	"name": "whitespider-unblocker",
-	"version": "1.3.1",
+	"version": "1.3.2",
 	"description": "Unblock websites through a proxy server, bypass the restrictions of local network and browser extensions.",
-	"author": "Ruochen Jia",
+	"author": "ChromeHack Team",
 	"license": "GPL-3.0",
 	"main": "main.js",
 	"type": "module",
@@ -18,15 +18,10 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/ruochenjia/whitespider-unblocker.git"
+		"url": "git+https://github.com/chromehackteam/whitespider-unblocker.git"
 	},
-	"keywords": [
-		"unblocker",
-		"proxy",
-		"whitespider"
-	],
 	"bugs": {
-		"url": "https://github.com/ruochenjia/whitespider-unblocker/issues"
+		"url": "https://github.com/chromehackteam/whitespider-unblocker/issues"
 	},
-	"homepage": "https://github.com/ruochenjia/whitespider-unblocker#readme"
+	"homepage": "https://github.com/chromehackteam/whitespider-unblocker#readme"
 }
