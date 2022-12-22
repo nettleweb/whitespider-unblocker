@@ -85,12 +85,7 @@ const config = {
 		 * @default null
 		 */
 		proxyAddress: null
-	},
-	/**
-	 * @type {boolean}
-	 * @default true
-	 */
-	allowPing: true
+	}
 };
 
 // binding provided port in env is required by some hosting providers

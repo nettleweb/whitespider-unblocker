@@ -38,13 +38,6 @@ function httpError(code, response) {
 }
 
 /**
- * @param {string} host
- */
-function verifyHost(host) {
-	return config.allowedHosts.includes(host.split(":")[0]);
-}
-
-/**
  * @param {URL} url
  */
 function getRequestPath(url) {
@@ -77,7 +70,7 @@ function getRequestPath(url) {
  */
 function requestCallback(request, response) {
 	const host = request.headers.host;
-	if (host == null || !verifyHost(host)) {
+	if (host == null || !config.allowedHosts.includes(host.split(":")[0])) {
 		httpError(403, response);
 		return;
 	}
@@ -87,11 +80,6 @@ function requestCallback(request, response) {
 	if (rawPath == null || method == null) {
 		httpError(400, response);
 		return;
-	}
-
-	if (config.allowPing && method === "PING") {
-		response.writeHead(200, "PING_SUCCESS", {});
-		response.end("RlVDSyBZT1UgR09PR0xF/b+AkICB", "utf-8");
 	}
 
 	const url = new URL(`https://${host}${rawPath}`);
